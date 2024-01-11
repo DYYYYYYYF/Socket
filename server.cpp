@@ -5,17 +5,11 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <iostream>//cout
-#include "Logger.hpp"
 #include "thread_pool.hpp"
 
 using namespace std;
- 
-Log::Logger* Global_Logger = Log::Logger::getInstance();
 
 int main() {
-	
-  Global_Logger->open("ServerLog");
-  Global_Logger->setMaxSize(65536);
 
   // mt::ThreadPool ThreadPool;
   // ThreadPool.Init();
@@ -95,7 +89,6 @@ int main() {
 	
  
   // ThreadPool.Release();
-  Global_Logger->close();
 	return 0;
 }
  
