@@ -5,11 +5,23 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <iostream>//cout
+
+#include "Logger.hpp"
 #include "thread_pool.hpp"
 
 using namespace std;
 
+Log::Logger* GlobalLogger;
+
 int main() {
+
+  GlobalLogger = Log::Logger::getInstance();
+  if (GlobalLogger == nullptr){
+        std::cout << "Init Logger error!";
+  }
+
+  GlobalLogger->open("Service-Log", std::ios_base::ate);
+  GlobalLogger->setMaxSize(65536);
 
   // mt::ThreadPool ThreadPool;
   // ThreadPool.Init();
@@ -19,7 +31,7 @@ int main() {
 	int socketfd = 0;
 	socklen_t length = 0;
 	int acceptfd = 0;//客户端的文件描述符
-	char ser_buf[66] = { 0 };
+	char ser_buf[1024] = { 0 };
 	int pid = 0;
 	//初始化网络
 	socketfd = socket(AF_INET,SOCK_STREAM,0);
@@ -49,12 +61,14 @@ int main() {
 		{
 			perror(" listen error");
 		}
+
+    INFO("Server ready...");
 		cout << "服务器网络通道准备好了" << endl;
  
 		//死循环保证服务器长时间在线
 		while (true)
 		{
-			cout << "等待客户端上线" << endl;
+      INFO("Wait for client...");
 			//等待客户端上线,地址和端口号已经设置过了，所以为null，如果没有客户端访问则一直被动等待
 			//返回值就表示那个客户端（给客户端发消息不需要知道客户端的ip地址）
 			acceptfd = accept(socketfd, NULL, NULL);//阻塞函数
@@ -63,7 +77,7 @@ int main() {
 			if (pid == 0)
 			{
 				read(acceptfd, ser_buf, sizeof(ser_buf));//注意这里是acceptfd不是socketfd
-				cout << "客户端连接成功! client_fd = " << acceptfd << "\nMessage: " << ser_buf << endl;
+        INFO("Connect successful! client_fd: %d  Message: %s", acceptfd, ser_buf);
 				bzero(ser_buf, sizeof(ser_buf));
 			}
 
@@ -88,7 +102,10 @@ int main() {
 	}
 	
  
+  GlobalLogger->close();
   // ThreadPool.Release();
+
+  INFO("Server close...");
 	return 0;
 }
  

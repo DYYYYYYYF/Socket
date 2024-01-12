@@ -16,7 +16,14 @@ void Log::Logger::log(Level level, const char* file, int line, const char* forma
     if(m_os.fail()) std::runtime_error("open file failed");
     time_t tick = time(NULL);
     struct tm ptm;
+#ifdef _WIN32
     localtime_s(&ptm, &tick);
+#elif __APPLE__
+    struct tm *mac_ptm;
+    mac_ptm = localtime(&tick);
+
+    ptm = *mac_ptm;
+#endif
     char timestamp[32];
     memset(timestamp, 0, sizeof(timestamp));
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &ptm);
@@ -53,7 +60,14 @@ void Log::Logger::backup(){
     close();
     time_t ticks = time(NULL);
     struct tm ptm;
-    localtime_s(&ptm, &ticks);
+
+#ifdef _WIN32
+    localtime_s(&ptm, &tick);
+#elif __APPLE__
+    struct tm *mac_ptm;
+    mac_ptm = localtime(&ticks);
+    ptm = *mac_ptm;
+#endif
     char timestamp[32];
     memset(timestamp, 0, sizeof(timestamp));
     strftime(timestamp, sizeof(timestamp), "-%Y-%m-%d_%H-%M-%S", &ptm);
